@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<link rel="stylesheet" type="text/css" href="css/photos.css"/>
+<script src="js/MTween3.js"></script>
+<script src="js/tools.js"></script>
+<script type="text/javascript">
+
+    window.onload = function (){
+        var main = document.getElementById("main");
+        var btns = document.getElementById("btns");
+        var photos = document.getElementById("photos");
+        var list = photos.getElementsByTagName("ul")[0];
+        var allLis = photos.getElementsByTagName("li");
+        var allImgs = photos.getElementsByTagName("img");
+        var onOff = true; // 控制连续点击问题
+        var array = [];  // 存放每一个元素的left和top值
+        var arr = [];   // 存在一个随机产生的数组
+
+        // 定义一个打乱顺序的数组
+        function randomSort(obj){
+            for( var i = 0; i < obj.length; i++ ){
+                obj.sort(function(a,b){
+                    return Math.random()-0.5;
+                })
+            }
+            return obj;
+        }
+        
+        // 循环所有元素，修改每一个元素的left和top值，并且把left和top值存放到array中
+        for( var i = 0; i < allLis.length; i++ ){
+            var l = (i%4) * 175 + 25;
+            var t = Math.floor(i/4) * 129;
+            allLis[i].style.position = "absolute";
+            allLis[i].style.zIndex = 1;
+            allLis[i].style.left = l + "px";
+            allLis[i].style.top = t + "px";
+            allLis[i].style.margin = 0;
+            array.push({left:l,top:t});
+        }
+
+        // 给每一个元素添加拖拽事件
+        for( var i = 0; i < allLis.length; i++ ){
+            allLis[i].index = i;
+            drag(allLis[i]);
+            arr.push(i);
+        }
+
+        // 点击按钮
+        btns.onclick = function (){
+            
+            //if( !onOff ) return; // onOff为false则不让连续点击
+            randomSort(arr);    // 打乱arr的顺序
+            onOff = false;
+            for( var i = 0; i < arr.length; i++ ){
+                (function (i){
+                    MTween(allLis[i],{
+                        left:array[arr[i]].left,
+                        top:array[arr[i]].top
+                        },1000,"linear",function (){
+                        if( i === arr.length - 1 ){
+                            onOff = true;
+                            for( var j = 0; j < allLis.length; j++ ){
+                                allLis[j].index = arr[j];
+                            }
+                        }
+                    });
+                }(i)) 
+            }
+        }
+
+        function drag(obj){
+            var disX = 0;
+            var disY = 0;
+            var tar;
+            obj.onmousedown = function(ev){
+                var disX = ev.clientX - this.offsetLeft;
+                var disY = ev.clientY - this.offsetTop;
+                this.style.zIndex = 10;
+                document.onmousemove = function (ev){
+                    var l = ev.clientX - disX;
+                    var t = ev.clientY - disY;
+                    obj.style.left = l + "px";
+                    obj.style.top = t + "px";
+                    tar = isCol(obj);
+                    for( var i = 0; i < allLis.length; i++ ){
+                        allLis[i].style.border = "";
+                    }
+                    if( tar ){
+                        tar.style.border = "1px solid #000";
+                    } 
+                }
+                document.onmouseup = function (){
+                    document.onmousemove = document.onmouseup = null;
+                    if( tar ){
+                        console.log(tar.index);
+                        MTween(obj,{left:array[tar.index].left,top:array[tar.index].top},300,"linear",function (){
+                            obj.style.zIndex = 1;
+                        });
+                        MTween(tar,{left:array[obj.index].left,top:array[obj.index].top},300);
+                        tar.style.border = "";
+                        [obj.index,tar.index] = [tar.index,obj.index];
+                    
+                    } else {
+
+                        MTween(obj,{left:array[obj.index].left,top:array[obj.index].top},300,"linear",function (){
+                        });
+
+                    }
+                }
+                return false;
+            }
+        }
+
+        function isCol(obj){
+            var value = Infinity;
+            var index = -1;
+            for( var i = 0; i < allLis.length; i++ ){
+                if(wTools.isCollide(obj,allLis[i]) && obj !== allLis[i]){
+                    var s = distance(obj,allLis[i]);
+                    if( s < value ){
+                        value = s;
+                        index = i;
+                    }
+                }
+            }
+            if(index != -1){
+                return allLis[index];
+            } else {
+                return false;
+            }
+        }
+
+        function distance(obj1,obj2){
+            var x = obj1.offsetLeft - obj2.offsetLeft;
+            var y = obj2.offsetTop - obj2.offsetTop;
+            return (x*x+y*y);
+        }
+        
+    }
+</script>
+</head>
+<body>
+<div class="main" id="main">
+    <div class="inputs">
+        <input type="button" value="随机"  id="btns"/>
+    </div>
+    <div class="bj" id="photos">
+        <ul>
+            <li>
+                <img src="./img/1.jpg" />
+            </li>
+            <li>
+                <img src="./img/2.jpg" />
+            </li>
+            <li>
+                <img src="./img/3.jpg" />
+            </li>
+            <li>
+                <img src="./img/4.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/5.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/6.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/7.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/8.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/9.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/10.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/11.jpg" />
+            </li>
+            <li class="margin1">
+                <img src="./img/12.jpg" />
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+
+</html>
